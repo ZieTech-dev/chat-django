@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+</head>
+<body>
+    <h2>Chat Room</h2>
+
+    <div id="chat-log" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+    <input id="chat-message-input" type="text" placeholder="Message..." autofocus autocomplete="off">
+    <button id="chat-message-submit">Envoyer</button>
+
+    <script>
+        // Utilisateur actuel
+        const currentUsername = "{{ request.user.username }}";
+
+        // Nom de la room
+        const roomName = "{{ room_name }}";
+
+        // Connexion WebSocket
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+
+        // Réception des messages
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const sender = data.sender;
+            const message = data.message;
+
+            // Vérifie si l'expéditeur est l'utilisateur actuel
+            const displaySender = (sender === currentUsername) ? 'Moi' : sender;
+
+            const chatLog = document.querySelector('#chat-log');
+            const messageHtml = `<p><strong>${displaySender}:</strong> ${message}</p>`;
+            chatLog.innerHTML += messageHtml;
+
+            // Scroll en bas automatiquement
+            chatLog.scrollTop = chatLog.scrollHeight;
+        };
+
+        // Envoi de message
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+
+            if (message.trim() !== '') {
+                chatSocket.send(JSON.stringify({'message': message}));
+                messageInputDom.value = '';
+            }
+        };
+    </script>
+</body>
+</html>

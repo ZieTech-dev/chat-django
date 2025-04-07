@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+</head>
+<body>
+    <h2>Chat avec {{ other_user.username }}</h2>
+    <div id="chat-log" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc;"></div>
+    <input id="chat-message-input" type="text" placeholder="Message..." autofocus autocomplete="off">
+    <button id="chat-message-submit">Envoyer</button>
+
+    <script>
+        const currentUsername = "{{ request.user.username }}";  // Ajoute cette ligne en haut
+    </script>
+
+    <script>
+        const roomName = "{{ room_name }}";
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const sender = data.sender;
+            const message = data.message;
+        
+            const chatLog = document.querySelector('#chat-log');
+            const messageHtml = `<p><strong>${sender}:</strong> ${message}</p>`;
+            chatLog.innerHTML += messageHtml;
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({'message': message}));
+            messageInputDom.value = '';
+        };
+    </script>
+</body>
+</html>

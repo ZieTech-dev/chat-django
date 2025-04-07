@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Accueil du chat</title>
+</head>
+<body>
+    <h2>Bienvenue {{ request.user.username }}</h2>
+    <p>Choisis un utilisateur pour chatter :</p>
+    <ul>
+        {% for user in users %}
+            <li><a href="{% url 'chat_room' user.username %}">{{ user.username }}</a></li>
+        {% empty %}
+            <li>Aucun autre utilisateur disponible</li>
+        {% endfor %}
+    </ul>
+    <p><a href="{% url 'logout' %}">Se déconnecter</a></p>
+</body>
+</html>
